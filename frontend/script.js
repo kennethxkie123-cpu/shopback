@@ -271,7 +271,12 @@ document.addEventListener('DOMContentLoaded', () => {
             targetTab.classList.add('active');
         }
 
-        if (tabId === 'tab-cashback') loadCashbackHistory();
+        if (tabId === 'tab-cashback') {
+            loadMyGeneratedLinks();
+            loadPendingCashback();
+            loadApprovedCashback();
+            loadCashbackHistory();
+        }
         if (tabId === 'tab-wallet') loadWalletData();
         if (tabId === 'tab-admin') loadAdminData();
     }
