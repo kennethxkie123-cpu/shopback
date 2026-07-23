@@ -96,21 +96,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function parseUTCDate(dateStr) {
+        if (!dateStr) return new Date();
+        let s = String(dateStr).trim();
+        if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 11)) {
+            s = s.replace(' ', 'T') + 'Z';
+        }
+        let d = new Date(s);
+        if (isNaN(d.getTime())) {
+            d = new Date(String(dateStr).replace(' ', 'T'));
+        }
+        if (isNaN(d.getTime())) {
+            d = new Date();
+        }
+        return d;
+    }
+
     function getCountdownTimerHTML(createdAtStr, status) {
         const st = (status || '').toLowerCase();
         if (st === 'approved' || st === 'validated' || st === 'paid') {
             return `<span class="badge approved" style="font-weight: 600;">✅ Validated</span>`;
         }
 
-        if (!createdAtStr) return `<span class="badge pending">⏳ 24h Timer</span>`;
-        
-        let s = String(createdAtStr);
-        if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 11)) {
-            s = s.replace(' ', 'T') + 'Z';
-        }
-        const createdDate = new Date(s);
-        if (isNaN(createdDate.getTime())) return `<span class="badge pending">⏳ 24h Timer</span>`;
-
+        const createdDate = parseUTCDate(createdAtStr);
         const expiresAt = createdDate.getTime() + (24 * 60 * 60 * 1000);
         const now = Date.now();
         const diffMs = expiresAt - now;
@@ -124,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const secs = Math.floor((diffMs % 60000) / 1000);
         const pad = n => String(n).padStart(2, '0');
 
-        return `<span class="badge pending countdown-timer-pill" data-created="${createdAtStr}" style="font-family: var(--font-mono, monospace); font-weight: 600; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏳ ${pad(hrs)}:${pad(mins)}:${pad(secs)} left</span>`;
+        return `<span class="badge pending countdown-timer-pill" data-created="${createdAtStr || createdDate.toISOString()}" style="font-family: var(--font-mono, monospace); font-weight: 600; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏳ ${pad(hrs)}:${pad(mins)}:${pad(secs)} left</span>`;
     }
 
     // Live Interval: Updates all live countdown timers on screen every second
@@ -488,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!body) return;
 
         if (links.length === 0) {
-            body.innerHTML = '<tr><td colspan="6" class="empty-msg">No affiliate links generated yet.</td></tr>';
+            body.innerHTML = '<tr><td colspan="7" class="empty-msg">No affiliate links generated yet.</td></tr>';
             return;
         }
 
