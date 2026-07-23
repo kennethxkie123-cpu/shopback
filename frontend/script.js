@@ -96,6 +96,72 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function getCountdownTimerHTML(createdAtStr, status) {
+        const st = (status || '').toLowerCase();
+        if (st === 'approved' || st === 'validated' || st === 'paid') {
+            return `<span class="badge approved" style="font-weight: 600;">✅ Validated</span>`;
+        }
+
+        if (!createdAtStr) return `<span class="badge pending">⏳ 24h Timer</span>`;
+        
+        let s = String(createdAtStr);
+        if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 11)) {
+            s = s.replace(' ', 'T') + 'Z';
+        }
+        const createdDate = new Date(s);
+        if (isNaN(createdDate.getTime())) return `<span class="badge pending">⏳ 24h Timer</span>`;
+
+        const expiresAt = createdDate.getTime() + (24 * 60 * 60 * 1000);
+        const now = Date.now();
+        const diffMs = expiresAt - now;
+
+        if (diffMs <= 0) {
+            return `<span class="badge" style="background: rgba(239,68,68,0.15); color: #ef4444; font-weight: 700;">🔴 Expired (Deleting...)</span>`;
+        }
+
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const secs = Math.floor((diffMs % 60000) / 1000);
+        const pad = n => String(n).padStart(2, '0');
+
+        return `<span class="badge pending countdown-timer-pill" data-created="${createdAtStr}" style="font-family: var(--font-mono, monospace); font-weight: 600; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏳ ${pad(hrs)}:${pad(mins)}:${pad(secs)} left</span>`;
+    }
+
+    // Live Interval: Updates all live countdown timers on screen every second
+    setInterval(() => {
+        const timerElements = document.querySelectorAll('.countdown-timer-pill');
+        const now = Date.now();
+
+        timerElements.forEach(el => {
+            const createdStr = el.getAttribute('data-created');
+            if (!createdStr) return;
+
+            let s = String(createdStr);
+            if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 11)) {
+                s = s.replace(' ', 'T') + 'Z';
+            }
+            const createdDate = new Date(s);
+            if (isNaN(createdDate.getTime())) return;
+
+            const expiresAt = createdDate.getTime() + (24 * 60 * 60 * 1000);
+            const diffMs = expiresAt - now;
+
+            if (diffMs <= 0) {
+                el.className = 'badge';
+                el.style.background = 'rgba(239,68,68,0.15)';
+                el.style.color = '#ef4444';
+                el.style.fontWeight = '700';
+                el.textContent = '🔴 Expired (Deleting...)';
+            } else {
+                const hrs = Math.floor(diffMs / 3600000);
+                const mins = Math.floor((diffMs % 3600000) / 60000);
+                const secs = Math.floor((diffMs % 60000) / 1000);
+                const pad = n => String(n).padStart(2, '0');
+                el.textContent = `⏳ ${pad(hrs)}:${pad(mins)}:${pad(secs)} left`;
+            }
+        });
+    }, 1000);
+
     function cleanProductTitle(rawTitle, rawUrl) {
         if (rawTitle && typeof rawTitle === 'string' && !rawTitle.startsWith('http://') && !rawTitle.startsWith('https://')) {
             let t = rawTitle.trim().replace(/-i\.\d+\.\d+/g, '').replace(/[-_]/g, ' ');
@@ -446,6 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const safeUrl = escapeHtml(l.original_url);
             const safeDeeplink = escapeHtml(l.deeplink);
             const safeTracking = escapeHtml(l.tracking_id);
+            const timerHtml = getCountdownTimerHTML(l.created_at, statusClass);
 
             return `
                 <tr>
@@ -456,6 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td><strong class="tabular-nums" style="color: var(--color-success-text);">₱${displayCashback}</strong></td>
                     <td><span class="badge ${statusClass}">${escapeHtml(l.status || 'Generated')}</span></td>
+                    <td>${timerHtml}</td>
                     <td>
                         <button class="nav-btn alt-btn track-timeline-btn" data-tracking="${safeTracking}" data-status="${statusClass}" data-url="${safeUrl}" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;">
                             Timeline ⏱️
