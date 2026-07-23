@@ -1,0 +1,33 @@
+/* ==========================================================================
+   Accessibility (WCAG AA Compliance, Screen Readers, Focus Rings)
+   ========================================================================== */
+
+/* Screen Reader Only Utility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* High Contrast & Visible Keyboard Navigation Rings */
+:focus-visible {
+    outline: 2px solid var(--color-primary) !important;
+    outline-offset: 2px !important;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.20) !important;
+}
+
+/* Touch Target Minimum (44px for Touch Devices) */
+@media (pointer: coarse) {
+    button, a, input, select {
+        min-height: 44px;
+    }
+}

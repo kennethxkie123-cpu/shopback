@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopBack — Affiliate Deeplink & Cashback Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            <span>ShopBack</span>
+        </div>
+        <div class="nav-user-area">
+            <div id="wallet-summary-header" class="wallet-summary-header hidden">
+                <span class="wallet-chip estimated" title="Estimated Cashback (Info Only)">
+                    <span class="chip-label">Est:</span> ₱<span id="hdr-estimated" class="tabular-nums">0.00</span>
+                </span>
+                <span class="wallet-chip pending" title="Pending Merchant Validation">
+                    <span class="chip-label">Pending:</span> ₱<span id="hdr-pending" class="tabular-nums">0.00</span>
+                </span>
+                <span class="wallet-chip available" title="Available for Cash Withdrawal">
+                    <span class="chip-label">Available:</span> ₱<span id="hdr-balance" class="tabular-nums">0.00</span>
+                </span>
+                <span class="wallet-chip paid" title="Total Paid Out to Date">
+                    <span class="chip-label">Paid:</span> ₱<span id="hdr-paid" class="tabular-nums">0.00</span>
+                </span>
+            </div>
+
+            <!-- Notifications Bell -->
+            <div class="notification-wrapper">
+                <button id="notif-bell-btn" class="nav-btn alt-btn" title="Notifications">
+                    🔔 <span id="notif-count-badge" class="notif-badge hidden">0</span>
+                </button>
+                <div id="notif-drawer" class="notif-drawer hidden">
+                    <div class="notif-header">
+                        <span>System Notifications</span>
+                        <button id="close-notif-btn" class="close-notif">✕</button>
+                    </div>
+                    <div id="notif-list" class="notif-list">
+                        <div class="empty-msg">No notifications yet.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="user-badge" class="user-badge">
+                <span id="user-name">John Cashback</span>
+                <button id="open-login-btn" class="nav-btn">Login</button>
+                <button id="logout-btn" class="nav-btn hidden">Logout</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="app-container">
+        <!-- Dashboard Navigation Tabs -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="tab-generator"><span class="tab-icon">🔗</span><span class="tab-label">Generator</span></button>
+            <button class="tab-btn" data-tab="tab-cart"><span class="tab-icon">🛒</span><span class="tab-label">Cart (<span id="cart-count-badge">0</span>)</span></button>
+            <button class="tab-btn" data-tab="tab-cashback"><span class="tab-icon">💰</span><span class="tab-label">Cashback</span></button>
+            <button class="tab-btn" data-tab="tab-wallet"><span class="tab-icon">💳</span><span class="tab-label">Wallet</span></button>
+            <button id="admin-tab-btn" class="tab-btn admin-tab" data-tab="tab-admin"><span class="tab-icon">🛡️</span><span class="tab-label">Admin</span></button>
+        </div>
+
+        <!-- Tab 1: Link Generator -->
+        <div id="tab-generator" class="tab-content active">
+            <div class="card hero-card">
+                <header class="hero-header">
+                    <h1 class="hero-title">ShopBack</h1>
+                    <p class="hero-subtitle">Shop, Paste & Earn — Convert product URLs into tracked affiliate deeplinks & earn real cashback automatically on every order.</p>
+                </header>
+
+                <main style="display: flex; flex-direction: column; align-items: center;">
+                    <!-- Input Section Form -->
+                    <form id="generator-form" class="input-section" onsubmit="return false;">
+                        <div class="input-wrapper">
+                            <input type="url" id="product-url" placeholder="Paste Shopee, Lazada, or TikTok product link..." required autocomplete="off">
+                            <button type="button" id="paste-btn" class="nav-btn alt-btn paste-inside-btn" title="Paste link from clipboard">
+                                📋 Paste
+                            </button>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; width: 100%;">
+                            <button type="submit" id="generate-btn" style="min-width: 240px;">
+                                <span class="btn-text">Generate Link ✨</span>
+                                <span class="loader hidden"></span>
+                            </button>
+                        </div>
+
+                        <!-- Supported Merchant Badges -->
+                        <div class="merchant-badge-group">
+                            <span style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted);">Supported Merchants:</span>
+                            <span class="merchant-tag shopee">Shopee 🟠</span>
+                            <span class="merchant-tag lazada">Lazada 🔵</span>
+                            <span class="merchant-tag tiktok">TikTok Shop 🔴</span>
+                        </div>
+                    </form>
+
+                    <!-- Result Section Card -->
+                    <div id="result-section" class="result-section hidden">
+                        <div id="error-message" class="error-msg-box hidden"></div>
+                        <div id="success-message" class="hidden" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                            <div id="product-preview" class="product-preview hidden" style="width: 100%;">
+                                <div class="preview-img-wrapper">
+                                    <img id="preview-image" src="" alt="Product Image" />
+                                </div>
+                                <div class="preview-details">
+                                    <h3 id="preview-title">Product Title</h3>
+                                    <div id="cashback-rate-badge" class="cashback-rate-badge hidden">✨ Earn up to <span id="cashback-rate-val">10.00%</span> Cashback</div>
+                                </div>
+                            </div>
+                            <div class="link-box hidden" style="display: none;">
+                                <input type="text" id="affiliate-link" readonly>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; width: 100%;">
+                                    <a id="checkout-btn" href="#" target="_blank" class="checkout-btn" style="min-width: 200px;">Proceed to Checkout 🛍️</a>
+                                    <button type="button" id="add-to-cart-btn" class="action-btn alt-btn" style="border: 1px solid var(--color-primary); color: var(--color-primary);">🛒 Add to Cart</button>
+                                </div>
+                                <button type="button" id="reset-btn" class="nav-btn alt-btn" style="margin-top: 1.25rem; min-width: 180px;">✨ Paste Another Link</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modern 3-Step Guide Grid -->
+                    <div class="explanation-card">
+                        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px;">💡 How Cashback Works</h3>
+                        <div class="explanation-grid">
+                            <div class="exp-item">
+                                <span class="badge estimated" style="margin-bottom: 0.5rem;">1. Generate & Save</span>
+                                <h4>Paste or Save Link</h4>
+                                <p>Paste any product link or save to your Cashback Cart to preserve it for later checkout.</p>
+                            </div>
+                            <div class="exp-item">
+                                <span class="badge pending" style="margin-bottom: 0.5rem;">2. Check Out</span>
+                                <h4>Complete Purchase</h4>
+                                <p>Click "Proceed to Checkout" to visit the merchant app/site and complete your order normally.</p>
+                            </div>
+                            <div class="exp-item">
+                                <span class="badge approved" style="margin-bottom: 0.5rem;">3. Get Paid</span>
+                                <h4>Earn Real Money</h4>
+                                <p>After merchant validation, cashback is credited to your wallet for GCash or Bank cashout!</p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Tab: Cashback Cart -->
+        <div id="tab-cart" class="tab-content">
+            <div class="card">
+                <header>
+                    <h2>🛒 My Cashback Cart</h2>
+                    <p class="subtitle">Preserved affiliate links saved to purchase later and earn cashback.</p>
+                </header>
+
+                <div id="cart-items-container" class="cart-items-list" style="display: flex; flex-direction: column; gap: 1rem; max-width: 820px; margin: 1rem auto 0 auto; width: 100%;">
+                    <div class="empty-msg">Loading cart items...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: My Cashback & Generated Links History -->
+        <div id="tab-cashback" class="tab-content">
+            <div class="card wide-card">
+                <h2>My Generated Links & Cashback Journeys</h2>
+                <p class="subtitle">Click on any generated link to view its live cashback timeline stepper.</p>
+
+                <!-- Cashback Overview Summary Cards -->
+                <div class="user-cashback-summary">
+                    <div class="analytics-card">
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted); font-weight: 600;">📅 Total Estimated Today</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; color: var(--color-text-primary);" class="tabular-nums" id="user-est-today">₱0.00</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 2px;">Potential cashback from links created today</div>
+                    </div>
+                    <div class="analytics-card" style="background: var(--color-warning-bg); border-color: var(--color-warning-border);">
+                        <div style="font-size: 0.82rem; color: var(--color-warning-text); font-weight: 600;">⌛ Pending Cashback</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; color: var(--color-warning-text);" class="tabular-nums" id="user-pending-total">₱0.00</div>
+                        <div style="font-size: 0.75rem; color: var(--color-warning-text); margin-top: 2px;">Tracked & awaiting merchant report</div>
+                    </div>
+                    <div class="analytics-card" style="background: var(--color-success-bg); border-color: var(--color-success-border);">
+                        <div style="font-size: 0.82rem; color: var(--color-success-text); font-weight: 600;">🎉 Lifetime Estimated Potential</div>
+                        <div style="font-size: 1.6rem; font-weight: 700; color: var(--color-success-text);" class="tabular-nums" id="user-est-lifetime">₱0.00</div>
+                        <div style="font-size: 0.75rem; color: var(--color-success-text); margin-top: 2px;">All-time generated links potential</div>
+                    </div>
+                </div>
+
+                <!-- Subtabs Navigation for My Cashback -->
+                <div class="subtabs-nav" style="margin-bottom: 1.25rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem;">
+                    <button class="subtab-btn active" data-subtab="cb-subtab-links">🔗 My Generated Links</button>
+                    <button class="subtab-btn" data-subtab="cb-subtab-pending">⏳ Pending Cashback</button>
+                    <button class="subtab-btn" data-subtab="cb-subtab-approved">✅ Approved Cashback</button>
+                    <button class="subtab-btn" data-subtab="cb-subtab-conversions">📜 All Conversions</button>
+                </div>
+
+                <!-- Subtab 1: Generated Links -->
+                <div id="cb-subtab-links" class="subtab-content">
+                    <div class="table-toolbar">
+                        <h3 style="margin: 0;">My Generated Links</h3>
+                        <input type="text" id="my-links-search" class="table-search-input" placeholder="🔍 Search links by URL or ID..." />
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Tracking ID</th>
+                                    <th>Product Name</th>
+                                    <th>Est. Cashback</th>
+                                    <th>Status</th>
+                                    <th>Timeline</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-links-body">
+                                <tr><td colspan="6" class="empty-msg">Loading generated links...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- My Links Pagination Bar -->
+                    <div id="my-links-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0.5rem 0;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            Showing page <strong id="my-links-curr-page">1</strong> of <strong id="my-links-total-pages">1</strong> (<span id="my-links-total-items">0</span> total links)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="my-links-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                            <button id="my-links-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subtab 2: Pending Cashback -->
+                <div id="cb-subtab-pending" class="subtab-content hidden">
+                    <h3 style="margin-bottom: 0.75rem;">⏳ Pending Cashback (Awaiting Advertiser Validation)</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Merchant</th>
+                                    <th>Order ID</th>
+                                    <th>Commission</th>
+                                    <th>Your Cashback</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashback-pending-body">
+                                <tr><td colspan="6" class="empty-msg">No pending cashback conversions.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="cashback-pending-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0.5rem 0;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            Showing page <strong id="cashback-pending-curr-page">1</strong> of <strong id="cashback-pending-total-pages">1</strong> (<span id="cashback-pending-total-items">0</span> pending)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="cashback-pending-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                            <button id="cashback-pending-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subtab 3: Approved Cashback -->
+                <div id="cb-subtab-approved" class="subtab-content hidden">
+                    <h3 style="margin-bottom: 0.75rem;">✅ Approved Cashback (Credited to Wallet)</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Merchant</th>
+                                    <th>Order ID</th>
+                                    <th>Commission</th>
+                                    <th>Your Cashback</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashback-approved-body">
+                                <tr><td colspan="6" class="empty-msg">No approved cashback conversions yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="cashback-approved-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0.5rem 0;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            Showing page <strong id="cashback-approved-curr-page">1</strong> of <strong id="cashback-approved-total-pages">1</strong> (<span id="cashback-approved-total-items">0</span> approved)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="cashback-approved-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                            <button id="cashback-approved-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subtab 4: All Conversions History -->
+                <div id="cb-subtab-conversions" class="subtab-content hidden">
+                    <h3 style="margin-bottom: 0.75rem;">📜 All Recorded Conversions</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Merchant</th>
+                                    <th>Order ID</th>
+                                    <th>Commission</th>
+                                    <th>Your Cashback</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashback-history-body">
+                                <tr><td colspan="6" class="empty-msg">Loading cashback history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Cashback History Pagination Bar -->
+                    <div id="cashback-history-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0.5rem 0;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            Showing page <strong id="cashback-history-curr-page">1</strong> of <strong id="cashback-history-total-pages">1</strong> (<span id="cashback-history-total-items">0</span> total items)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="cashback-history-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                            <button id="cashback-history-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Wallet & Withdrawals -->
+        <div id="tab-wallet" class="tab-content">
+            <div class="card wide-card">
+                <h2>My Wallet Balance</h2>
+                <div class="wallet-grid">
+                    <div class="wallet-card available-card">
+                        <div class="w-label">Available Balance</div>
+                        <div class="w-amount">₱<span id="w-balance" class="tabular-nums">0.00</span></div>
+                        
+                        <!-- Min Withdrawal Progress Bar -->
+                        <div style="margin-top: 0.85rem; margin-bottom: 1rem; text-align: left;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px;">
+                                <span style="color: var(--color-success-text);">Cashout Target (₱100.00 Min)</span>
+                                <span id="cashout-progress-pct" style="color: var(--color-success-text); font-weight: 700;">0%</span>
+                            </div>
+                            <div style="height: 6px; background: rgba(13, 101, 45, 0.15); border-radius: 99px; overflow: hidden;">
+                                <div id="cashout-progress-bar" style="width: 0%; height: 100%; background: var(--color-success); transition: width 0.4s ease;"></div>
+                            </div>
+                        </div>
+
+                        <button id="open-withdraw-btn" class="action-btn" style="width: 100%;">Withdraw Funds</button>
+                    </div>
+                    <div class="wallet-card pending-card">
+                        <div class="w-label">Pending Cashback</div>
+                        <div class="w-amount">₱<span id="w-pending" class="tabular-nums">0.00</span></div>
+                    </div>
+                    <div class="wallet-card paid-card">
+                        <div class="w-label">Total Cash Paid</div>
+                        <div class="w-amount">₱<span id="w-paid" class="tabular-nums">0.00</span></div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">Transaction Ledger</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wallet-history-body">
+                            <tr><td colspan="4" class="empty-msg">Loading transaction ledger...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Admin Portal -->
+        <div id="tab-admin" class="tab-content">
+            <div class="card wide-card">
+                <h2>🛡️ Admin Management Console</h2>
+
+                <!-- Analytics Summary Cards -->
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted);">Estimation Accuracy</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--color-success); margin-top: 4px;" id="metric-accuracy">96.4%</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted);">Merchant Approval Rate</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #4f46e5; margin-top: 4px;" id="metric-approval">88.5%</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted);">Avg Validation Time</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--color-warning); margin-top: 4px;" id="metric-val-time">4.2 Days</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted);">Total Admin Profit</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--color-success-text); margin-top: 4px;" id="metric-admin-profit" class="tabular-nums">₱0.00</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <button id="open-test-conv-btn" class="action-btn alt-btn">🧪 Simulate Test Conversion</button>
+                </div>
+
+                <!-- Subtabs Navigation for Admin Panel -->
+                <div class="subtabs-nav" style="margin-top: 1.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem;">
+                    <button class="subtab-btn active" data-subtab="admin-subtab-users">👥 Registered Users</button>
+                    <button class="subtab-btn" data-subtab="admin-subtab-links">🔗 Generated Links & Sub IDs</button>
+                    <button class="subtab-btn" data-subtab="admin-subtab-withdrawals">💳 Pending Withdrawals</button>
+                    <button class="subtab-btn" data-subtab="admin-subtab-conversions">📊 System Conversions</button>
+                </div>
+
+                <!-- Admin Subtab 1: Users -->
+                <div id="admin-subtab-users" class="subtab-content">
+                    <h3 style="margin-bottom: 0.75rem;">Registered Users & Cashback Summaries</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Est. Cashback</th>
+                                    <th>Pending</th>
+                                    <th>Available</th>
+                                    <th>Paid Cashback</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-body">
+                                <tr><td colspan="9" class="empty-msg">Loading user summaries...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="admin-users-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding: 0.5rem 0;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            Showing page <strong id="admin-users-curr-page">1</strong> of <strong id="admin-users-total-pages">1</strong> (<span id="admin-users-total-items">0</span> total users)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="admin-users-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                            <button id="admin-users-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Subtab 2: Links -->
+                <div id="admin-subtab-links" class="subtab-content hidden">
+                    <div class="table-toolbar">
+                        <h3 style="margin: 0;">All Generated Links & Sub IDs</h3>
+                        <input type="text" id="admin-links-search" class="table-search-input" placeholder="🔍 Search admin links..." />
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Link ID</th>
+                                    <th>Full Name</th>
+                                    <th>User ID</th>
+                                    <th>Tracking ID (aff_sub1)</th>
+                                    <th>aff_sub2</th>
+                                    <th>aff_sub3</th>
+                                    <th>aff_sub4</th>
+                                    <th>aff_sub5</th>
+                                    <th>Clicks</th>
+                                    <th>Generated Deeplink</th>
+                                    <th>Original URL</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-links-body">
+                                <tr><td colspan="12" class="empty-msg">Loading generated links...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="admin-links-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding: 0.5rem 0;">
+                        <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                            Showing page <strong id="admin-links-curr-page">1</strong> of <strong id="admin-links-total-pages">1</strong> (<span id="admin-links-total-items">0</span> total links)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="admin-links-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                            <button id="admin-links-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Subtab 3: Withdrawals -->
+                <div id="admin-subtab-withdrawals" class="subtab-content hidden">
+                    <h3 style="margin-bottom: 0.75rem;">Pending Withdrawal Requests</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Req ID</th>
+                                    <th>User ID</th>
+                                    <th>Amount</th>
+                                    <th>Bank / Payment</th>
+                                    <th>Requested At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-withdrawals-body">
+                                <tr><td colspan="6" class="empty-msg">No pending withdrawal requests.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Subtab 4: Conversions -->
+                <div id="admin-subtab-conversions" class="subtab-content hidden">
+                    <h3 style="margin-bottom: 0.75rem;">All System Conversions</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Conversion ID</th>
+                                    <th>Order ID</th>
+                                    <th>User ID</th>
+                                    <th>Merchant</th>
+                                    <th>Total Commission (Involve)</th>
+                                    <th>User Cashback</th>
+                                    <th>Admin Net Profit</th>
+                                    <th>Tracking ID (aff_sub1)</th>
+                                    <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-conversions-body">
+                            <tr><td colspan="10" class="empty-msg">Loading conversions...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="admin-conversions-pagination" class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding: 0.5rem 0;">
+                    <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                        Showing page <strong id="admin-conversions-curr-page">1</strong> of <strong id="admin-conversions-total-pages">1</strong> (<span id="admin-conversions-total-items">0</span> total conversions)
+                    </span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="admin-conversions-prev-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">◀ Previous</button>
+                        <button id="admin-conversions-next-btn" class="nav-btn alt-btn" disabled style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Next ▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-login-btn" class="close-modal">&times;</span>
+            <h2>Account Login</h2>
+            <p style="color: var(--color-text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">Select a quick demo account or enter credentials.</p>
+
+            <div class="quick-demo-buttons">
+                <button id="quick-demo-user" class="demo-login-btn">👤 Login as John Cashback (User)</button>
+                <button id="quick-demo-admin" class="demo-login-btn admin-demo">🛡️ Login as System Admin</button>
+            </div>
+
+            <div class="divider"><span>OR</span></div>
+
+            <form id="login-form">
+                <div class="input-group">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="john@example.com" style="margin-top: 4px;">
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" style="margin-top: 4px;">
+                </div>
+                <button type="submit" class="action-btn" style="margin-top: 1.25rem; width: 100%;">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div id="withdraw-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-withdraw-btn" class="close-modal">&times;</span>
+            <h2>Withdraw Available Balance</h2>
+            <form id="withdraw-form" style="margin-top: 1.25rem;">
+                <div class="input-group">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Amount (PHP)</label>
+                    <input type="number" id="withdraw-amount" step="0.01" min="1" required placeholder="100.00" style="margin-top: 4px;">
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Payment Method / GCash / Bank</label>
+                    <input type="text" id="withdraw-account" required placeholder="GCash 0917XXXXXXX" style="margin-top: 4px;">
+                </div>
+                <button type="submit" class="action-btn" style="margin-top: 1.25rem; width: 100%;">Submit Withdrawal Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manual Test Conversion Modal -->
+    <div id="test-conv-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-test-conv-btn" class="close-modal">&times;</span>
+            <h2>🧪 Simulate Test Conversion</h2>
+            <form id="test-conv-form" style="margin-top: 1rem;">
+                <div class="input-group">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Tracking ID / aff_sub1</label>
+                    <input type="text" id="sim-tracking-id" required placeholder="UUID Tracking ID" style="margin-top: 4px;">
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Merchant</label>
+                    <select id="sim-merchant" style="margin-top: 4px;">
+                        <option value="Shopee">Shopee (80% Cashback)</option>
+                        <option value="Lazada">Lazada (75% Cashback)</option>
+                        <option value="TikTok">TikTok (60% Cashback)</option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Commission Amount (PHP)</label>
+                    <input type="number" id="sim-commission" step="0.01" value="250.00" required style="margin-top: 4px;">
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted);">Status</label>
+                    <select id="sim-status" style="margin-top: 4px;">
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <button type="submit" class="action-btn alt-btn" style="margin-top: 1.25rem; width: 100%;">Trigger Conversion</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timeline Stepper Modal -->
+    <div id="timeline-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <span id="close-timeline-btn" class="close-modal">&times;</span>
+            <h2 id="modal-timeline-title">Cashback Journey Timeline</h2>
+            <p id="modal-timeline-sub" style="color: var(--color-text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Tracking ID: <code id="modal-tracking-id">---</code></p>
+            
+            <div class="timeline-stepper-box">
+                <div class="stepper-track">
+                    <div class="step-node active" id="modal-step-node-1">
+                        <div class="node-circle">1</div>
+                        <div class="node-label">Link Generated<span style="font-size: 0.68rem; font-weight: normal; color: var(--color-text-muted); display: block; margin-top: 2px;">Instant</span></div>
+                    </div>
+                    <div class="step-line" id="modal-step-line-1"></div>
+                    <div class="step-node" id="modal-step-node-2">
+                        <div class="node-circle">2</div>
+                        <div class="node-label">Purchase Tracked<span style="font-size: 0.68rem; font-weight: normal; color: var(--color-text-muted); display: block; margin-top: 2px;">~24 Hours</span></div>
+                    </div>
+                    <div class="step-line" id="modal-step-line-2"></div>
+                    <div class="step-node" id="modal-step-node-3">
+                        <div class="node-circle">3</div>
+                        <div class="node-label">Pending Validation<span style="font-size: 0.68rem; font-weight: normal; color: var(--color-text-muted); display: block; margin-top: 2px;">30-60 Days</span></div>
+                    </div>
+                    <div class="step-line" id="modal-step-line-3"></div>
+                    <div class="step-node" id="modal-step-node-4">
+                        <div class="node-circle">4</div>
+                        <div class="node-label">Cashback Available<span style="font-size: 0.68rem; font-weight: normal; color: var(--color-text-muted); display: block; margin-top: 2px;">Ready to Cashout</span></div>
+                    </div>
+                    <div class="step-line" id="modal-step-line-4"></div>
+                    <div class="step-node" id="modal-step-node-5">
+                        <div class="node-circle">5</div>
+                        <div class="node-label">Withdrawn<span style="font-size: 0.68rem; font-weight: normal; color: var(--color-text-muted); display: block; margin-top: 2px;">Payout Sent</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-timeline-desc" style="background: var(--color-surface-secondary); border: 1px solid var(--color-border); padding: 1rem; border-radius: var(--radius-md); font-size: 0.85rem;">
+                <strong>Current Stage Status:</strong> <span id="modal-status-text" class="badge estimated">Estimated</span>
+                <p id="modal-explanation-text" style="margin-top: 6px; color: var(--color-text-muted);">Link generated successfully. When a purchase is completed via this link, your cashback will move to Pending status.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Generated Links Modal for Admin -->
+    <div id="admin-user-links-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 920px; width: 95%;">
+            <span id="close-user-links-modal-btn" class="close-modal">&times;</span>
+            <h2 id="modal-user-links-title">💸 Earn Cashback When You Paste & Check Out — Activity Breakdown</h2>
+            <p id="modal-user-links-sub" style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Earn cashback automatically when pasting product links and checking out!</p>
+
+            <!-- Categorized Totals Summary Bar -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: var(--color-surface-secondary); border: 1px solid var(--color-border); padding: 1rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Generated Only</div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: var(--color-text-primary); margin-top: 4px;" id="u-modal-cnt-gen">0 links</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted);" class="tabular-nums" id="u-modal-sum-gen">₱0.00</div>
+                </div>
+                <div style="background: var(--color-warning-bg); border: 1px solid var(--color-warning-border); padding: 1rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-warning-text); text-transform: uppercase;">Pending Validation</div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: var(--color-warning-text); margin-top: 4px;" id="u-modal-cnt-pending">0 links</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-warning-text);" class="tabular-nums" id="u-modal-sum-pending">₱0.00</div>
+                </div>
+                <div style="background: var(--color-success-bg); border: 1px solid var(--color-success-border); padding: 1rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-success-text); text-transform: uppercase;">Approved / Validated</div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: var(--color-success-text); margin-top: 4px;" id="u-modal-cnt-approved">0 links</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-success-text);" class="tabular-nums" id="u-modal-sum-approved">₱0.00</div>
+                </div>
+                <div style="background: var(--color-info-bg); border: 1px solid var(--color-info-border); padding: 1rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-info-text); text-transform: uppercase;">Paid Out</div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: var(--color-info-text); margin-top: 4px;" id="u-modal-cnt-paid">0 links</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-info-text);" class="tabular-nums" id="u-modal-sum-paid">₱0.00</div>
+                </div>
+            </div>
+
+            <!-- Category Filter Sub-tabs -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto;">
+                <button class="user-link-filter-btn active" data-filter="all">All Links</button>
+                <button class="user-link-filter-btn" data-filter="generated">Generated Only</button>
+                <button class="user-link-filter-btn" data-filter="pending">Pending</button>
+                <button class="user-link-filter-btn" data-filter="approved">Approved / Validated</button>
+                <button class="user-link-filter-btn" data-filter="paid">Paid</button>
+            </div>
+
+            <!-- Links Table -->
+            <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Tracking ID</th>
+                            <th>Original URL</th>
+                            <th>Est. Cashback</th>
+                            <th>Status</th>
+                            <th>Timeline</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-modal-links-body">
+                        <tr><td colspan="6" class="empty-msg">Loading user links...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

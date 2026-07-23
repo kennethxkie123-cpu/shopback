@@ -1,0 +1,102 @@
+/* ==========================================================================
+   Cashback Journey Timeline Stepper Component
+   ========================================================================== */
+
+.timeline-stepper-box {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6) var(--space-4);
+    margin-top: var(--space-5);
+    margin-bottom: var(--space-5);
+    overflow-x: auto;
+}
+
+.stepper-track {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 460px;
+    padding: 0 var(--space-2);
+}
+
+.step-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+    z-index: 2;
+}
+
+.node-circle {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.step-node.done .node-circle {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+}
+
+.step-node.active .node-circle {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.node-label {
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-muted);
+    font-weight: var(--font-weight-medium);
+    margin-top: var(--space-2);
+    line-height: var(--line-height-tight);
+    word-break: break-word;
+    hyphens: auto;
+    text-align: center;
+    padding: 0 var(--space-0-5);
+}
+
+.step-node.active .node-label {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-bold);
+}
+
+.step-line {
+    flex: 1;
+    height: 3px;
+    background: var(--color-border);
+    margin-top: 15px;
+    margin-left: -12px;
+    margin-right: -12px;
+    border-radius: var(--radius-xs);
+    z-index: 1;
+}
+
+.step-line.active {
+    background: var(--color-primary);
+}
+
+#modal-timeline-desc {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-main);
+    margin-top: var(--space-5);
+}

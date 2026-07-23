@@ -1,0 +1,130 @@
+/* ==========================================================================
+   Design System Tokens (Variables)
+   Matte Design Palette — Flat, Non-Glossy, Desaturated Tactile Finish
+   ========================================================================== */
+
+:root {
+    /* --- Typography Family --- */
+    --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+
+    /* --- Font Size Scale --- */
+    --font-size-2xs: 0.70rem; /* 11.2px */
+    --font-size-xs:  0.75rem; /* 12px */
+    --font-size-sm:  0.85rem; /* 13.6px */
+    --font-size-base:0.95rem; /* 15.2px */
+    --font-size-lg:  1.10rem; /* 17.6px */
+    --font-size-xl:  1.30rem; /* 20.8px */
+    --font-size-2xl: 1.50rem; /* 24px */
+    --font-size-3xl: 1.85rem; /* 29.6px */
+    --font-size-4xl: 2.25rem; /* 36px */
+
+    /* --- Font Weight Tokens --- */
+    --font-weight-regular:  400;
+    --font-weight-medium:   500;
+    --font-weight-semibold: 600;
+    --font-weight-bold:     700;
+    --font-weight-extrabold:800;
+
+    /* --- Line Heights --- */
+    --line-height-tight: 1.25;
+    --line-height-normal:1.50;
+    --line-height-relaxed:1.65;
+
+    /* --- Letter Spacings --- */
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-heading:-0.020em;
+    --letter-spacing-normal: 0.000em;
+    --letter-spacing-wide:   0.050em;
+    --letter-spacing-wider:  0.075em;
+
+    /* --- Spacing Scale (4px Base Unit) --- */
+    --space-0-5: 0.125rem; /* 2px */
+    --space-1:   0.25rem;  /* 4px */
+    --space-2:   0.50rem;  /* 8px */
+    --space-3:   0.75rem;  /* 12px */
+    --space-4:   1.00rem;  /* 16px */
+    --space-5:   1.25rem;  /* 20px */
+    --space-6:   1.50rem;  /* 24px */
+    --space-8:   2.00rem;  /* 32px */
+    --space-10:  2.50rem;  /* 40px */
+    --space-12:  3.00rem;  /* 48px */
+    --space-16:  4.00rem;  /* 64px */
+
+    /* --- Border Radius Scale --- */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-full: 9999px;
+
+    /* --- Matte Elevation & Shadow Tokens (Non-Glossy Soft Diffuse) --- */
+    --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
+    --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.02);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.02);
+    --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+    --shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.10);
+
+    /* --- Matte Core Neutral Tokens --- */
+    --color-bg: #f4f6f8;
+    --color-surface: #ffffff;
+    --color-surface-secondary: #eef2f5;
+    --color-surface-hover: #f1f4f6;
+    
+    --color-border: #dce1e7;
+    --color-border-subtle: #eef2f5;
+    --color-border-strong: #c4cbd4;
+
+    --color-text-primary: #1e293b;
+    --color-text-secondary: #334155;
+    --color-text-muted: #64748b;
+    --color-text-disabled: #94a3b8;
+    --color-text-inverse: #ffffff;
+
+    /* --- Matte Primary Action Tokens --- */
+    --color-primary: #2563eb;
+    --color-primary-hover: #1d4ed8;
+    --color-primary-active: #1e40af;
+    --color-on-primary: #ffffff;
+
+    /* --- Matte Semantic Status Tokens (Base, Background, Border, Text) --- */
+    /* Matte Success / Available */
+    --color-success: #059669;
+    --color-success-bg: #e6f4ea;
+    --color-success-border: #b7e1cd;
+    --color-success-text: #0d652d;
+
+    /* Matte Warning / Pending */
+    --color-warning: #d97706;
+    --color-warning-bg: #fef7e0;
+    --color-warning-border: #fce8b2;
+    --color-warning-text: #b06000;
+
+    /* Matte Danger / Rejected */
+    --color-danger: #dc2626;
+    --color-danger-bg: #fce8e6;
+    --color-danger-border: #f6aea9;
+    --color-danger-text: #c5221f;
+
+    /* Matte Info / Paid Out */
+    --color-info: #0284c7;
+    --color-info-bg: #e8f0fe;
+    --color-info-border: #aecbfa;
+    --color-info-text: #1967d2;
+
+    /* Matte Neutral / Estimated */
+    --color-neutral: #64748b;
+    --color-neutral-bg: #f1f3f4;
+    --color-neutral-border: #dadce0;
+    --color-neutral-text: #3c4043;
+
+    /* --- Z-Index Hierarchy --- */
+    --z-index-sticky: 100;
+    --z-index-drawer: 500;
+    --z-index-modal: 1000;
+    --z-index-modal-overlay: 2000;
+    --z-index-toast: 3000;
+}

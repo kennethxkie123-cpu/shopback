@@ -1,0 +1,80 @@
+/* ==========================================================================
+   Financial UI Standards — Matte Finish Specification
+   Strict Financial Hierarchy Rules (Matte Colors):
+   - Available Cashback: Matte Emerald (#0d652d / #e6f4ea) [HIGHEST VISUAL EMPHASIS]
+   - Pending Cashback: Matte Amber (#b06000 / #fef7e0)
+   - Paid Cashback: Matte Blue (#1967d2 / #e8f0fe)
+   - Estimated Cashback: Matte Neutral Gray (#3c4043 / #f1f3f4) [SUBTLE EMPHASIS]
+   - Rejected Cashback: Matte Coral Red (#c5221f / #fce8e6)
+   ========================================================================== */
+
+:root {
+    /* Financial Status Colors (Matte) */
+    --color-fin-available-text: var(--color-success-text);
+    --color-fin-available-bg: var(--color-success-bg);
+    --color-fin-available-border: var(--color-success-border);
+
+    --color-fin-pending-text: var(--color-warning-text);
+    --color-fin-pending-bg: var(--color-warning-bg);
+    --color-fin-pending-border: var(--color-warning-border);
+
+    --color-fin-paid-text: var(--color-info-text);
+    --color-fin-paid-bg: var(--color-info-bg);
+    --color-fin-paid-border: var(--color-info-border);
+
+    --color-fin-estimated-text: var(--color-neutral-text);
+    --color-fin-estimated-bg: var(--color-neutral-bg);
+    --color-fin-estimated-border: var(--color-neutral-border);
+
+    --color-fin-rejected-text: var(--color-danger-text);
+    --color-fin-rejected-bg: var(--color-danger-bg);
+    --color-fin-rejected-border: var(--color-danger-border);
+}
+
+/* Monospaced Financial Numerals */
+.fin-amount, .tabular-nums, .w-amount {
+    font-family: var(--font-family-mono), monospace;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.02em;
+}
+
+/* Financial Card Emphasis Scale (Matte Surface Cards) */
+.wallet-card.available-card {
+    background: var(--color-fin-available-bg);
+    border: 1px solid var(--color-fin-available-border);
+    box-shadow: 0 2px 4px 0 rgba(13, 101, 45, 0.04);
+}
+
+.wallet-card.available-card .w-amount {
+    color: var(--color-fin-available-text);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-extrabold);
+}
+
+.wallet-card.pending-card {
+    background: var(--color-fin-pending-bg);
+    border: 1px solid var(--color-fin-pending-border);
+}
+
+.wallet-card.pending-card .w-amount {
+    color: var(--color-fin-pending-text);
+}
+
+.wallet-card.paid-card {
+    background: var(--color-fin-paid-bg);
+    border: 1px solid var(--color-fin-paid-border);
+}
+
+.wallet-card.paid-card .w-amount {
+    color: var(--color-fin-paid-text);
+}
+
+.wallet-card.estimated-card {
+    background: var(--color-fin-estimated-bg);
+    border: 1px solid var(--color-fin-estimated-border);
+}
+
+.wallet-card.estimated-card .w-amount {
+    color: var(--color-fin-estimated-text);
+    font-size: var(--font-size-2xl);
+}

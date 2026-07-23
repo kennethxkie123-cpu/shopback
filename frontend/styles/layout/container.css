@@ -1,0 +1,116 @@
+/* ==========================================================================
+   Layout Components (Header Nav, Grid Systems, Container)
+   ========================================================================== */
+
+/* Top Header Navigation */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 72px;
+    padding: 0 var(--space-8);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-sticky);
+    box-shadow: var(--shadow-xs);
+}
+
+.logo {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-extrabold);
+    letter-spacing: var(--letter-spacing-heading);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-main);
+}
+
+.nav-user-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+}
+
+.wallet-summary-header {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* App Main Container & Tabs */
+.app-container {
+    max-width: 1280px;
+    width: 100%;
+    margin: var(--space-8) auto;
+    padding: 0 var(--space-6);
+    flex: 1;
+}
+
+.tab-nav {
+    display: flex;
+    gap: var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-8);
+}
+
+.tab-btn {
+    padding: var(--space-3) var(--space-2);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-muted);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-tight);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+    color: var(--color-text-main);
+}
+
+.tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 0 var(--space-4);
+        height: 64px;
+    }
+
+    .wallet-summary-header {
+        display: none;
+    }
+
+    .app-container {
+        padding: 0 var(--space-4);
+        margin: var(--space-5) auto;
+    }
+
+    .tab-nav {
+        gap: var(--space-3);
+        overflow-x: auto;
+        padding-bottom: var(--space-1);
+    }
+
+    .tab-btn {
+        white-space: nowrap;
+        font-size: var(--font-size-sm);
+        padding: var(--space-2) var(--space-1);
+    }
+}

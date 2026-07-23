@@ -1,0 +1,24 @@
+/* ==========================================================================
+   Main Architecture Entry Point
+   Imports all Design Tokens, Financial Standards, Base Resets, Layout & UI Components
+   ========================================================================== */
+
+/* 1. Tokens & Design System Variables */
+@import './tokens/variables.css';
+@import './tokens/financial.css';
+
+/* 2. Base Resets & Accessibility */
+@import './base/reset.css';
+@import './accessibility/wcag.css';
+
+/* 3. Layout & Containers */
+@import './layout/container.css';
+
+/* 4. Component Modules */
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/cards.css';
+@import './components/tables.css';
+@import './components/badges.css';
+@import './components/modals.css';
+@import './components/timeline.css';
