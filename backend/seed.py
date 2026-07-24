@@ -31,21 +31,32 @@ def seed_data(db: Session):
         )
         db.add(demo_user)
 
-    # 2. Seed Admin User
-    admin_email = "admin@example.com"
-    admin_user = db.query(User).filter(User.email == admin_email).first()
+    # 2. Seed / Sync Admin User from Config Environment Variables
+    from backend.core.config import settings
+    admin_email = settings.ADMIN_EMAIL.strip().lower()
+    admin_password = settings.ADMIN_PASSWORD
+
+    admin_user = db.query(User).filter(User.role == "admin").first()
+    if not admin_user:
+        admin_user = db.query(User).filter(User.email == admin_email).first()
+
     if not admin_user:
         logger.info(f"Seeding admin user ({admin_email})...")
         admin_user = User(
             name="System Admin",
             email=admin_email,
-            password_hash=hash_password("Admin123!"),
+            password_hash=hash_password(admin_password),
             role="admin",
             wallet_balance=Decimal("0.00"),
             wallet_pending=Decimal("0.00"),
             wallet_paid=Decimal("0.00")
         )
         db.add(admin_user)
+    else:
+        # Auto-sync admin credentials if changed in env settings
+        admin_user.email = admin_email
+        admin_user.password_hash = hash_password(admin_password)
+        logger.info(f"Updated admin credentials: {admin_email}")
 
     # 3. Seed Merchant Cashback Settings (10% User Cashback, 90% Admin Profit)
     default_settings = [

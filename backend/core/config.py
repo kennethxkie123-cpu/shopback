@@ -35,8 +35,10 @@ class Settings(BaseSettings):
     MAX_LINKS_PER_MINUTE: int = 10
     MAX_LINKS_PER_DAY: int = 100
 
-    # Unpredictable Secret Admin Path
+    # Unpredictable Secret Admin Path & Configurable Admin Credentials
     ADMIN_SECRET_PATH: str = os.getenv("ADMIN_SECRET_PATH", "admin-portal-sec-883719")
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "admin@example.com")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "Admin123!")
 
     ALLOWED_ORIGINS: List[str] = ["*"]
 
