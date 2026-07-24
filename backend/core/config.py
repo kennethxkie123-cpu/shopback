@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     MAX_LINKS_PER_MINUTE: int = 10
     MAX_LINKS_PER_DAY: int = 100
 
+    # Unpredictable Secret Admin Path
+    ADMIN_SECRET_PATH: str = os.getenv("ADMIN_SECRET_PATH", "admin-portal-sec-883719")
+
     ALLOWED_ORIGINS: List[str] = ["*"]
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")

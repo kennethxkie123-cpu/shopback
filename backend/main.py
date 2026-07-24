@@ -108,6 +108,15 @@ def favicon():
     from fastapi.responses import Response
     return Response(status_code=204)
 
+# Unpredictable Secret Admin Portal Endpoint
+admin_slug = settings.ADMIN_SECRET_PATH.strip('/')
+@app.get(f"/{admin_slug}", include_in_schema=False)
+def serve_admin_portal():
+    """Serves the standalone Admin Portal page at the configurable secret URL path."""
+    from fastapi.responses import FileResponse
+    admin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "admin.html")
+    return FileResponse(admin_path)
+
 # Include Modular API Routers
 app.include_router(auth_router.router)
 app.include_router(affiliate_router.router)
