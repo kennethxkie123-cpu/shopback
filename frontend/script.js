@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnText = document.querySelector('.btn-text');
     const loader = document.querySelector('.loader');
     const checkoutBtn = document.getElementById('checkout-btn');
-    const inputSection = document.querySelector('.input-section') || document.getElementById('input-section');
     const resetBtn = document.getElementById('reset-btn');
     
     const previewContainer = document.getElementById('product-preview');
@@ -219,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const openLoginBtn = document.getElementById('open-login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const userNameSpan = document.getElementById('user-name');
-    const walletSummaryHeader = document.getElementById('wallet-summary-header');
     const hdrBalance = document.getElementById('hdr-balance');
     const hdrPending = document.getElementById('hdr-pending');
 
@@ -257,19 +255,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Tab Navigation ---
     const tabButtons = document.querySelectorAll('.tab-btn');
+    const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
     const tabContents = document.querySelectorAll('.tab-content');
 
     function switchTab(tabId) {
         tabButtons.forEach(b => b.classList.remove('active'));
+        mobileNavItems.forEach(m => m.classList.remove('active'));
         tabContents.forEach(c => c.classList.remove('active'));
 
         const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        const targetMobile = document.querySelector(`.mobile-nav-item[data-tab="${tabId}"]`);
         const targetTab = document.getElementById(tabId);
         
-        if (targetBtn && targetTab) {
-            targetBtn.classList.add('active');
-            targetTab.classList.add('active');
-        }
+        if (targetBtn) targetBtn.classList.add('active');
+        if (targetMobile) targetMobile.classList.add('active');
+        if (targetTab) targetTab.classList.add('active');
 
         if (tabId === 'tab-cashback') {
             loadMyGeneratedLinks();
@@ -283,6 +283,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tabButtons.forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    mobileNavItems.forEach(item => {
+        if (item.id === 'mobile-profile-trigger') {
+            item.addEventListener('click', () => {
+                const openLoginBtn = document.getElementById('open-login-btn');
+                if (openLoginBtn && !openLoginBtn.classList.contains('hidden')) {
+                    openLoginBtn.click();
+                } else {
+                    switchTab('tab-wallet');
+                }
+            });
+        } else if (item.dataset.tab) {
+            item.addEventListener('click', () => switchTab(item.dataset.tab));
+        }
     });
 
     // --- Authentication ---
@@ -363,14 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentUser) {
             userNameSpan.textContent = currentUser.name + (isAdmin ? ' (Admin)' : '');
+            userNameSpan.classList.remove('hidden');
             openLoginBtn.classList.add('hidden');
             logoutBtn.classList.remove('hidden');
-            walletSummaryHeader.classList.remove('hidden');
-        } else {
-            userNameSpan.textContent = 'John Cashback';
-            openLoginBtn.classList.add('hidden');
-            logoutBtn.classList.remove('hidden');
-            walletSummaryHeader.classList.remove('hidden');
         }
     }
 
@@ -405,15 +415,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const balance = parseFloat(data.available_balance || 0).toFixed(2);
                 const pending = parseFloat(data.pending_cashback || 0).toFixed(2);
                 const paid = parseFloat(data.total_paid || 0).toFixed(2);
-                const estimated = parseFloat(data.estimated_cashback || 0).toFixed(2);
 
                 if (hdrBalance) hdrBalance.textContent = balance;
                 if (hdrPending) hdrPending.textContent = pending;
                 
-                const hdrEst = document.getElementById('hdr-estimated');
-                const hdrPaid = document.getElementById('hdr-paid');
-                if (hdrEst) hdrEst.textContent = estimated;
-                if (hdrPaid) hdrPaid.textContent = paid;
 
                 if (wBalance) wBalance.textContent = balance;
                 if (wPending) wPending.textContent = pending;
@@ -473,6 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (nextBtn) nextBtn.disabled = (myLinksCurrentPage >= myLinksTotalPages);
 
                 renderMyLinksTable(allMyLinks);
+                renderRecentLinksCard(allMyLinks);
             }
         } catch (e) {
             console.error("My links fetch error:", e);
@@ -558,6 +564,110 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.track-timeline-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 openTimelineModal(btn.dataset.tracking, btn.dataset.status, btn.dataset.url);
+            });
+        });
+    }
+
+    function getProductImageForLink(l) {
+        if (l.image && typeof l.image === 'string' && l.image.startsWith('http')) return l.image;
+        if (l.product_image && typeof l.product_image === 'string' && l.product_image.startsWith('http')) return l.product_image;
+        if (l.preview_image && typeof l.preview_image === 'string' && l.preview_image.startsWith('http')) return l.preview_image;
+        if (l.thumbnail && typeof l.thumbnail === 'string' && l.thumbnail.startsWith('http')) return l.thumbnail;
+
+        if (l.original_url) {
+            try {
+                const cached = localStorage.getItem('preview_' + l.original_url);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && parsed.image && typeof parsed.image === 'string' && parsed.image.startsWith('http')) {
+                        return parsed.image;
+                    }
+                }
+            } catch (e) {}
+        }
+        return null;
+    }
+
+    function renderRecentLinksCard(links) {
+        const container = document.getElementById('recent-links-list') || document.querySelector('.recent-links-list');
+        if (!container) return;
+
+        if (!links || links.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 24px; color: var(--color-text-secondary); font-size: 13px;">
+                    No generated links yet. Paste a Shopee, Lazada, or TikTok product URL above!
+                </div>
+            `;
+            return;
+        }
+
+        const recentItems = links.slice(0, 4);
+
+        container.innerHTML = recentItems.map(l => {
+            const urlStr = (l.original_url || '').toLowerCase();
+            let storeIcon = '🛍️ Shopee';
+            let thumbClass = 'nike';
+            let thumbEmoji = '👟';
+
+            if (urlStr.includes('lazada')) {
+                storeIcon = '🧡 Lazada';
+                thumbClass = 'sony';
+                thumbEmoji = '🎧';
+            } else if (urlStr.includes('tiktok')) {
+                storeIcon = '🎵 TikTok Shop';
+                thumbClass = 'powerbank';
+                thumbEmoji = '🔋';
+            }
+
+            const title = cleanProductTitle(l.product_name || l.title, l.original_url);
+            const status = (l.status || 'generated').toLowerCase();
+            let badgeClass = 'tracking';
+            let badgeText = '⚡ Generated';
+
+            if (status === 'approved' || status === 'validated' || status === 'confirmed') {
+                badgeClass = 'confirmed';
+                badgeText = '✅ Confirmed';
+            } else if (status === 'pending') {
+                badgeClass = 'pending';
+                badgeText = '🕒 Pending';
+            } else if (status === 'tracked' || status === 'tracking') {
+                badgeClass = 'tracking';
+                badgeText = '⏳ Tracking';
+            }
+
+            const val = parseFloat(l.cashback_amount || 5.00);
+            const cashback = val.toFixed(2);
+            const safeTracking = escapeHtml(l.tracking_id);
+            const safeStatus = escapeHtml(status);
+            const safeUrl = escapeHtml(l.original_url);
+            const imgUrl = getProductImageForLink(l);
+            const safeTitle = escapeHtml(title);
+
+            const thumbContent = imgUrl
+                ? `<img src="${escapeHtml(imgUrl)}" alt="${safeTitle}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;" /><div style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">${thumbEmoji}</div>`
+                : thumbEmoji;
+
+            return `
+                <div class="recent-link-item track-recent-item" data-tracking="${safeTracking}" data-status="${safeStatus}" data-url="${safeUrl}" style="cursor: pointer;">
+                    <div class="item-thumb-box ${thumbClass}" style="overflow: hidden; padding: 0;">${thumbContent}</div>
+                    <div class="item-details-col">
+                        <div class="item-product-name" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeTitle}</div>
+                        <div class="item-store-row">${storeIcon}</div>
+                    </div>
+                    <div class="item-right-col">
+                        <div class="item-status-block">
+                            <div class="item-cashback-amount">₱${cashback}</div>
+                            <div class="badge-pill ${badgeClass}">${badgeText}</div>
+                        </div>
+                        <span class="item-chevron">❯</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.querySelectorAll('.track-recent-item').forEach(el => {
+            el.addEventListener('click', () => {
+                openTimelineModal(el.dataset.tracking, el.dataset.status, el.dataset.url);
             });
         });
     }
@@ -1270,26 +1380,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Link Generator Logic ---
-    function updateTimelineStepper(stage) {
-        const box = document.getElementById('timeline-stepper-box');
-        if (!box) return;
-        box.classList.remove('hidden');
-
-        for (let i = 1; i <= 5; i++) {
-            const node = document.getElementById(`step-node-${i}`);
-            const line = document.getElementById(`step-line-${i}`);
-            if (node) {
-                node.classList.remove('active', 'done');
-                if (i < stage) node.classList.add('done');
-                if (i === stage) node.classList.add('active');
-            }
-            if (line) {
-                line.classList.remove('active');
-                if (i < stage) line.classList.add('active');
-            }
-        }
-    }
-
     function renderPreview(previewData) {
         previewTitle.textContent = previewData.title || 'Product Link';
         if (previewData.image) {
@@ -1307,7 +1397,6 @@ document.addEventListener('DOMContentLoaded', () => {
             cashbackBadge.classList.remove('hidden');
         }
 
-        updateTimelineStepper(1);
         previewContainer.classList.remove('hidden');
         previewContainer.style.display = 'flex';
 
@@ -1328,6 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(previewData => {
             localStorage.setItem('preview_' + url, JSON.stringify(previewData));
             renderPreview(previewData);
+            renderRecentLinksCard(allMyLinks);
         })
         .catch(err => console.error("Preview fetch failed:", err));
     }
@@ -1484,6 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 fetchAndRenderPreview(url);
                 setLoading(false);
+                loadMyGeneratedLinks();
                 showToast('Tracking link generated successfully! ✨', 'success');
             } else {
                 showError(data.detail || data.message || 'Failed to generate link.');
@@ -1521,8 +1612,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(trackUrl, { method: 'POST', keepalive: true })
                     .then(() => setTimeout(loadAdminData, 400))
                     .catch(e => console.error("Click track error:", e));
-
-                setTimeout(loadAdminData, 600);
             }
         });
     }
@@ -1531,10 +1620,9 @@ document.addEventListener('DOMContentLoaded', () => {
         resetBtn.addEventListener('click', () => {
             localStorage.removeItem('current_url');
             urlInput.value = '';
-            const formEl = generatorForm || inputSection;
-            if (formEl) {
-                formEl.classList.remove('hidden');
-                formEl.style.display = 'flex';
+            if (generatorForm) {
+                generatorForm.classList.remove('hidden');
+                generatorForm.style.display = 'flex';
             }
             hideResult();
             setLoading(false);
@@ -1574,10 +1662,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showError(message) {
-        const formEl = generatorForm || inputSection;
-        if (formEl) {
-            formEl.classList.remove('hidden');
-            formEl.style.display = 'flex';
+        if (generatorForm) {
+            generatorForm.classList.remove('hidden');
+            generatorForm.style.display = 'flex';
         }
         if (resultSection) {
             resultSection.classList.remove('hidden');
@@ -1591,10 +1678,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showSuccess(link) {
-        const formEl = generatorForm || inputSection;
-        if (formEl) {
-            formEl.classList.add('hidden');
-            formEl.style.display = 'none';
+        if (generatorForm) {
+            generatorForm.classList.add('hidden');
+            generatorForm.style.display = 'none';
         }
         if (resultSection) {
             resultSection.classList.remove('hidden');
