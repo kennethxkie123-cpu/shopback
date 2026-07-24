@@ -104,11 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showLoginView() {
+        document.documentElement.classList.remove('admin-authed');
         if (adminLoginView) adminLoginView.classList.remove('hidden');
         if (adminDashboardView) adminDashboardView.classList.add('hidden');
     }
 
     function showDashboardView() {
+        document.documentElement.classList.add('admin-authed');
         if (adminLoginView) adminLoginView.classList.add('hidden');
         if (adminDashboardView) adminDashboardView.classList.remove('hidden');
         if (adminUserBadge && currentAdmin) {
