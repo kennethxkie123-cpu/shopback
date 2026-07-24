@@ -308,8 +308,9 @@ def fetch_offers():
         logger.error(f"Error in fetch_offers: {str(e)}")
         return {"success": False, "message": str(e)}
 
-# Serve frontend automatically
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+# Serve frontend automatically with absolute path resolution
+frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
